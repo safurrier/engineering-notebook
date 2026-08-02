@@ -4,6 +4,7 @@ import { join } from "path";
 
 const fixturePath = join(import.meta.dir, "../tests/fixtures/test-session-1.jsonl");
 const codexFixturePath = join(import.meta.dir, "../tests/fixtures/test-codex-session-1.jsonl");
+const piFixturePath = join(import.meta.dir, "../tests/fixtures/test-pi-session-1.jsonl");
 const subagentFixturePath = join(import.meta.dir, "../tests/fixtures/parent-session-id/subagents/agent-aba4e4e.jsonl");
 const commandFixturePath = join(import.meta.dir, "../tests/fixtures/test-command-messages.jsonl");
 
@@ -97,6 +98,21 @@ describe("parseSession", () => {
     const joined = session.messages.map((m) => m.text).join("\n");
     expect(joined).not.toContain("# AGENTS.md instructions");
     expect(joined).not.toContain("<environment_context>");
+  });
+
+  test("parses Pi session metadata and conversation text", () => {
+    const session = parseSession(piFixturePath);
+    expect(session.sessionId).toBe("019fc0e4-7887-7475-a9f9-0a58b9718ad2");
+    expect(session.projectPath).toBe("/Users/alexfurrier/projects/myapp");
+    expect(session.userDisplayName).toBe("alexfurrier");
+    expect(session.assistantDisplayName).toBe("Pi");
+    expect(session.version).toBe("3");
+    expect(session.messages).toHaveLength(2);
+    expect(session.messages[0]?.text).toBe("Fix the Pi parser.");
+    expect(session.messages[1]?.text).toBe("I added Pi session support.");
+    expect(session.messages.map((message) => message.text).join("\n")).not.toContain("AGENTS.md instructions");
+    expect(session.messages.map((message) => message.text).join("\n")).not.toContain("Tool result");
+    expect(session.toMarkdown()).toContain("**Pi (2026-08-02 05:13):** I added Pi session support.");
   });
 
   test("parses subagent files without skipping records", () => {

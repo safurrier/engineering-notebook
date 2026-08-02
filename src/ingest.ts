@@ -2,6 +2,19 @@ import { readdirSync, statSync } from "fs";
 import { join, relative } from "path";
 import { Database } from "bun:sqlite";
 import { parseSession } from "./parser";
+import { expandPath } from "./config";
+
+/** Combine configured sources with every explicit --source argument. */
+export function resolveIngestSources(configuredSources: string[], args: string[]): string[] {
+  const sources = configuredSources.map(expandPath);
+  for (let index = 0; index < args.length; index++) {
+    if (args[index] === "--source" && args[index + 1]) {
+      sources.push(expandPath(args[index + 1]!));
+      index++;
+    }
+  }
+  return sources;
+}
 
 /** Scan source directories for .jsonl session files, applying exclude patterns */
 export function scanSources(

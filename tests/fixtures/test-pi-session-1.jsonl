@@ -1,0 +1,7 @@
+{"type":"session","version":3,"id":"019fc0e4-7887-7475-a9f9-0a58b9718ad2","timestamp":"2026-08-02T05:13:46.375Z","cwd":"/Users/alexfurrier/projects/myapp"}
+{"type":"model_change","id":"model-1","timestamp":"2026-08-02T05:13:46.400Z","provider":"openai","modelId":"gpt-5"}
+{"type":"message","id":"bootstrap","timestamp":"2026-08-02T05:13:46.500Z","message":{"role":"user","content":[{"type":"text","text":"# AGENTS.md instructions for /Users/alexfurrier/projects/myapp"}]}}
+{"type":"message","id":"msg-1","timestamp":"2026-08-02T05:13:47.059Z","message":{"role":"user","content":[{"type":"text","text":"Fix the Pi parser."}]}}
+{"type":"message","id":"msg-2","timestamp":"2026-08-02T05:13:51.561Z","message":{"role":"assistant","content":[{"type":"thinking","thinking":"I should inspect the parser."},{"type":"toolCall","name":"read"},{"type":"text","text":"I added Pi session support."}]}}
+{"type":"message","id":"tool-result","timestamp":"2026-08-02T05:14:00.000Z","message":{"role":"toolResult","content":[{"type":"text","text":"Tool output should be ignored."}]}}
+{"type":"message","id":"user-tool-result","timestamp":"2026-08-02T05:14:01.000Z","message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"tool-1","text":"Tool result should be ignored."}]}}

@@ -1,10 +1,25 @@
 import { describe, test, expect, beforeEach, afterEach } from "bun:test";
-import { scanSources, ingestSessions } from "./ingest";
+import { scanSources, ingestSessions, resolveIngestSources } from "./ingest";
 import { initDb, closeDb } from "./db";
 import { mkdtempSync, rmSync, mkdirSync, writeFileSync, copyFileSync } from "fs";
 import { join } from "path";
-import { tmpdir } from "os";
+import { tmpdir, homedir } from "os";
 
+
+describe("resolveIngestSources", () => {
+  test("includes every repeated --source argument alongside custom configuration", () => {
+    const sources = resolveIngestSources(
+      ["/custom/sessions"],
+      ["--source", "~/.codex/sessions", "--source", "~/.pi/agent/sessions"]
+    );
+
+    expect(sources).toEqual([
+      "/custom/sessions",
+      join(homedir(), ".codex/sessions"),
+      join(homedir(), ".pi/agent/sessions"),
+    ]);
+  });
+});
 
 describe("scanSources", () => {
   let tempDir: string;

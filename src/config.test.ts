@@ -18,7 +18,7 @@ describe("config", () => {
 
   test("defaultConfig has expected shape", () => {
     const config = defaultConfig();
-    expect(config.sources).toEqual(["~/.claude/projects", "~/.codex/sessions"]);
+    expect(config.sources).toEqual(["~/.claude/projects", "~/.codex/sessions", "~/.pi/agent/sessions"]);
     expect(config.exclude).toContain("-private-tmp*");
     expect(config.port).toBe(3000);
     expect(config.db_path).toContain("notebook.db");
@@ -26,7 +26,7 @@ describe("config", () => {
 
   test("loadConfig returns default when no file exists", () => {
     const config = loadConfig(join(tempDir, "nonexistent.json"));
-    expect(config.sources).toEqual(["~/.claude/projects", "~/.codex/sessions"]);
+    expect(config.sources).toEqual(["~/.claude/projects", "~/.codex/sessions", "~/.pi/agent/sessions"]);
   });
 
   test("saveConfig writes and loadConfig reads back", () => {
@@ -46,12 +46,20 @@ describe("config", () => {
     expect(loaded).toEqual(config);
   });
 
-  test("migrates legacy default sources to include Codex sessions", () => {
+  test("migrates the prior default sources to include Pi sessions", () => {
     const configPath = join(tempDir, "legacy-config.json");
+    writeFileSync(configPath, JSON.stringify({ sources: ["~/.claude/projects", "~/.codex/sessions"] }));
+
+    const loaded = loadConfig(configPath);
+    expect(loaded.sources).toEqual(["~/.claude/projects", "~/.codex/sessions", "~/.pi/agent/sessions"]);
+  });
+
+  test("migrates the original Claude-only default sources", () => {
+    const configPath = join(tempDir, "older-config.json");
     writeFileSync(configPath, JSON.stringify({ sources: ["~/.claude/projects"] }));
 
     const loaded = loadConfig(configPath);
-    expect(loaded.sources).toEqual(["~/.claude/projects", "~/.codex/sessions"]);
+    expect(loaded.sources).toEqual(["~/.claude/projects", "~/.codex/sessions", "~/.pi/agent/sessions"]);
   });
 
   test("does not migrate custom single-source configs", () => {

@@ -61,6 +61,18 @@ type CodexRecord = {
   };
 };
 
+type PiRecord = {
+  type: string;
+  id?: string;
+  cwd?: string;
+  version?: string | number;
+  timestamp?: string;
+  message?: {
+    role?: string;
+    content?: string | ContentBlock[];
+  };
+};
+
 type ContentBlock = {
   type: string;
   text?: string;
@@ -172,10 +184,11 @@ export function parseSession(filePath: string): ParsedSession {
   let lastTimestamp: string | null = null;
   const messages: ParsedMessage[] = [];
   let codexFormat = false;
+  let piFormat = false;
   let assistantDisplayName = "Claude";
 
   for (const line of lines) {
-    let parsed: RawRecord | CodexRecord;
+    let parsed: RawRecord | CodexRecord | PiRecord;
     try {
       parsed = JSON.parse(line);
     } catch {
@@ -220,6 +233,41 @@ export function parseSession(filePath: string): ParsedSession {
         text,
         timestamp: codexRecord.timestamp || "",
       });
+      continue;
+    }
+
+    const piRecord = parsed as PiRecord;
+    if (piRecord.type === "session" || piFormat) {
+      piFormat = true;
+      assistantDisplayName = "Pi";
+
+      if (piRecord.timestamp) {
+        if (!firstTimestamp) firstTimestamp = piRecord.timestamp;
+        lastTimestamp = piRecord.timestamp;
+      }
+
+      if (piRecord.type === "session") {
+        if (piRecord.id) sessionId = piRecord.id;
+        if (piRecord.cwd && !projectPath) projectPath = piRecord.cwd;
+        if (piRecord.version !== undefined && !version) version = String(piRecord.version);
+        continue;
+      }
+
+      if (piRecord.type !== "message" || !piRecord.message) continue;
+      if (piRecord.message.role !== "user" && piRecord.message.role !== "assistant") {
+        continue;
+      }
+
+      const role = piRecord.message.role as "user" | "assistant";
+      const content = piRecord.message.content;
+      if (!content) continue;
+      const text = role === "user"
+        ? extractUserText(content)
+        : extractAssistantText(content);
+      if (!text) continue;
+      if (role === "user" && isCodexBoilerplateUserMessage(text)) continue;
+
+      messages.push({ role, text, timestamp: piRecord.timestamp || "" });
       continue;
     }
 

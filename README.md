@@ -1,6 +1,6 @@
 # Engineering Notebook
 
-A CLI tool that ingests [Claude Code](https://docs.anthropic.com/en/docs/claude-code) and [Codex](https://openai.com/index/introducing-codex/) session transcripts, generates LLM-powered daily summaries, and serves a web UI for browsing your engineering journal.
+A CLI tool that ingests [Claude Code](https://docs.anthropic.com/en/docs/claude-code), [Codex](https://openai.com/index/introducing-codex/), and [Pi](https://github.com/badlogic/pi-mono) session transcripts, generates LLM-powered daily summaries, and serves a web UI for browsing your engineering journal.
 
 Think of it as an automatic engineering diary — it watches your AI coding sessions and distills them into a searchable, browsable narrative of what you built, what problems you hit, and what decisions you made.
 
@@ -8,7 +8,7 @@ Think of it as an automatic engineering diary — it watches your AI coding sess
 
 ## How It Works
 
-1. **Ingest** — Scans directories of Claude Code and Codex JSONL session files, parses out the human-readable conversation (stripping tool calls, thinking blocks, etc.), and stores them in SQLite.
+1. **Ingest** — Scans directories of Claude Code, Codex, and Pi JSONL session files, parses out the human-readable conversation (stripping tool calls, thinking blocks, etc.), and stores them in SQLite.
 2. **Summarize** — Groups sessions by date and project, then uses Claude to write concise engineering journal entries with headlines, summaries, topics, and open questions.
 3. **Serve** — Runs a web server with a browsable UI: daily journal, project timelines, calendar/Gantt view, session transcripts, full-text search, and an iCal feed.
 
@@ -26,7 +26,7 @@ bun link  # makes `engineering-notebook` available globally
 ## Quick Start
 
 ```sh
-# 1. Ingest your sessions (defaults to ~/.claude/projects and ~/.codex/sessions)
+# 1. Ingest your sessions (defaults to ~/.claude/projects, ~/.codex/sessions, and ~/.pi/agent/sessions)
 engineering-notebook ingest
 
 # 2. Generate journal summaries (requires ANTHROPIC_API_KEY)
@@ -51,7 +51,7 @@ The web interface has several views:
 |:---:|:---:|
 | Calendar/Gantt view | Full-text search |
 
-Each session transcript includes a resume command (`claude --resume <id>`) with a copy button for picking up where you left off.
+Session transcripts include a copyable resume command. Pi sessions use `pi --session <source-file>`, the installed Pi CLI's documented session-file resume contract.
 
 ## Usage
 
@@ -93,7 +93,7 @@ Config lives at `~/.config/engineering-notebook/config.json`:
 
 ```json
 {
-  "sources": ["~/.claude/projects", "~/.codex/sessions"],
+  "sources": ["~/.claude/projects", "~/.codex/sessions", "~/.pi/agent/sessions"],
   "exclude": ["-private-tmp*", "*-skill-test-*"],
   "db_path": "~/.config/engineering-notebook/notebook.db",
   "port": 3000,
@@ -106,7 +106,7 @@ Config lives at `~/.config/engineering-notebook/config.json`:
 
 | Field                  | Description                                                                              | Default                                        |
 | ---------------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| `sources`              | Directories to scan for session files                                                    | `["~/.claude/projects", "~/.codex/sessions"]`  |
+| `sources`              | Directories to scan for session files                                                    | `["~/.claude/projects", "~/.codex/sessions", "~/.pi/agent/sessions"]`  |
 | `exclude`              | Glob patterns for directories to skip                                                    | `["-private-tmp*", "*-skill-test-*"]`          |
 | `db_path`              | SQLite database location                                                                 | `~/.config/engineering-notebook/notebook.db`   |
 | `port`                 | Web server port                                                                          | `3000`                                         |
