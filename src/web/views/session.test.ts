@@ -13,6 +13,20 @@ describe("renderSessionFooter", () => {
     expect(html).not.toContain("codex resume");
   });
 
+  test("renders the Pi session-file resume command for Pi session paths", () => {
+    const sourcePath = "/Users/alexfurrier/.pi/agent/sessions/project/session.jsonl";
+    const html = renderSessionFooter(
+      "019fc0e4-7887-7475-a9f9-0a58b9718ad2",
+      "/Users/alexfurrier/projects/myapp",
+      sourcePath
+    );
+
+    expect(html).toContain("pi --session '/Users/alexfurrier/.pi/agent/sessions/project/session.jsonl'");
+    expect(html).toContain("copy-btn");
+    expect(html).not.toContain("claude --resume");
+    expect(html).not.toContain("codex resume");
+  });
+
   test("renders Codex resume command for Codex session source paths", () => {
     const html = renderSessionFooter(
       "019bf429-646d-70c2-a8b8-a0d69db3f01d",

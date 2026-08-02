@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { renderConversation } from "./conversation";
+import { inferAssistantDisplayName, renderConversation } from "./conversation";
 
 describe("renderConversation", () => {
   test("renders empty state for missing markdown", () => {
@@ -79,6 +79,16 @@ describe("renderConversation", () => {
     const md = "**peteror (2026-02-21 17:37):** Hello";
     const html = renderConversation(md);
     expect(html).toContain("peteror");
+  });
+
+  test("renders Pi as the assistant", () => {
+    const html = renderConversation("**Pi (2026-02-21 17:37):** I parsed the session", "alex", "Pi");
+    expect(html).toContain("msg-body-claude");
+    expect(html).toContain(">Pi</div>");
+  });
+
+  test("infers Pi from Pi session paths", () => {
+    expect(inferAssistantDisplayName("/Users/alex/.pi/agent/sessions/project/session.jsonl")).toBe("Pi");
   });
 
   test("can remap Claude/Assistant labels to Codex for legacy codex transcripts", () => {

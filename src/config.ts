@@ -20,10 +20,15 @@ export type Config = {
   auto_sync_interval: number;
 };
 
+const LEGACY_DEFAULT_SOURCE_LISTS = [
+  ["~/.claude/projects"],
+  ["~/.claude/projects", "~/.codex/sessions"],
+];
+
 export function defaultConfig(): Config {
   const configDir = join(homedir(), ".config", "engineering-notebook");
   return {
-    sources: ["~/.claude/projects", "~/.codex/sessions"],
+    sources: ["~/.claude/projects", "~/.codex/sessions", "~/.pi/agent/sessions"],
     exclude: ["-private-tmp*", "*-skill-test-*"],
     db_path: join(configDir, "notebook.db"),
     port: 3000,
@@ -47,11 +52,14 @@ export function loadConfig(path?: string): Config {
   const parsed = JSON.parse(raw) as Partial<Config>;
   const config = { ...defaultConfig(), ...parsed };
 
-  // Migrate older default source list to include Codex sessions.
+  // Migrate only known historical defaults. Leave custom source lists untouched.
   if (
     Array.isArray(parsed.sources) &&
-    parsed.sources.length === 1 &&
-    parsed.sources[0] === "~/.claude/projects"
+    LEGACY_DEFAULT_SOURCE_LISTS.some(
+      (sources) =>
+        sources.length === parsed.sources!.length &&
+        sources.every((source, index) => source === parsed.sources![index])
+    )
   ) {
     config.sources = defaultConfig().sources;
   }

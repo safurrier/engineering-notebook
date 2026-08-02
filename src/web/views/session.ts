@@ -2,14 +2,22 @@ import { Database } from "bun:sqlite";
 import { inferAssistantDisplayName, inferUserDisplayName, renderConversation } from "./conversation";
 import { escapeHtml } from "./helpers";
 
+/** Quote an argument for a POSIX shell command displayed to the user. */
+function shellQuote(value: string): string {
+  return `'${value.replace(/'/g, "'\\''")}'`;
+}
+
 /**
  * Render a resume command footer with copy button and source path.
  */
 export function renderSessionFooter(sessionId: string, projectPath: string, sourcePath: string): string {
-  const isCodexSession = sourcePath.includes("/.codex/sessions/");
-  const resumeCmd = isCodexSession
-    ? `cd ${projectPath} && codex resume ${sessionId}`
-    : `cd ${projectPath} && claude --resume ${sessionId}`;
+  const normalizedSourcePath = sourcePath.replace(/\\/g, "/");
+  const resumeCmd = normalizedSourcePath.includes("/.pi/agent/sessions/")
+    // `pi --help` documents --session <path|id>; the source file is unambiguous.
+    ? `pi --session ${shellQuote(sourcePath)}`
+    : normalizedSourcePath.includes("/.codex/sessions/")
+      ? `cd ${projectPath} && codex resume ${sessionId}`
+      : `cd ${projectPath} && claude --resume ${sessionId}`;
   let html = `<div class="session-footer">`;
   html += `<div class="session-footer-resume">`;
   html += `<code>${escapeHtml(resumeCmd)}</code>`;

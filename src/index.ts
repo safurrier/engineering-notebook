@@ -1,8 +1,8 @@
 #!/usr/bin/env bun
 
-import { loadConfig, expandPath } from "./config";
+import { loadConfig } from "./config";
 import { initDb, closeDb } from "./db";
-import { scanSources, ingestSessions } from "./ingest";
+import { scanSources, ingestSessions, resolveIngestSources } from "./ingest";
 
 const command = process.argv[2];
 
@@ -13,12 +13,8 @@ switch (command) {
 
     const force = process.argv.includes("--force");
 
-    // Collect sources: config + any --source args
-    const sources = config.sources.map(expandPath);
-    const sourceIdx = process.argv.indexOf("--source");
-    if (sourceIdx !== -1 && process.argv[sourceIdx + 1]) {
-      sources.push(expandPath(process.argv[sourceIdx + 1]!));
-    }
+    // Collect configured sources plus every explicit --source argument.
+    const sources = resolveIngestSources(config.sources, process.argv.slice(3));
 
     // Sync remote sources
     const remoteSources = config.remote_sources?.filter((s) => s.enabled) || [];
